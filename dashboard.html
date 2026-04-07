@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>لوحة التحكم | المتفوقين</title>
+  <link rel="stylesheet" href="css/style.css">
+  <style>
+    .quiz-option{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:.85rem 1rem;cursor:pointer;display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;transition:.2s}
+    .quiz-option:hover{border-color:var(--accent);background:rgba(233,69,96,.08)}
+    .quiz-option.selected{border-color:var(--accent);background:rgba(233,69,96,.15)}
+    .opt-letter{width:28px;height:28px;border-radius:50%;background:rgba(233,69,96,.2);color:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.82rem;flex-shrink:0}
+    .quiz-option.selected .opt-letter{background:var(--accent);color:white}
+    .quiz-bar{height:4px;background:rgba(255,255,255,.08);border-radius:50px;overflow:hidden;margin-top:.3rem}
+    .quiz-bar-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--gold));border-radius:50px;transition:width .4s}
+    .quiz-question{font-size:1rem;font-weight:700;margin-bottom:1rem;line-height:1.5}
+    .quiz-nav{display:flex;justify-content:space-between;margin-top:1rem}
+    .quiz-result{text-align:center;padding:1.5rem}
+    .result-circle{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 1rem}
+    .result-circle.pass{background:rgba(46,204,113,.15);border:3px solid rgba(46,204,113,.5)}
+    .result-circle.fail{background:rgba(231,76,60,.1);border:3px solid rgba(231,76,60,.4)}
+    .result-num{font-size:1.6rem;font-weight:900}
+    .result-circle.pass .result-num{color:#2ecc71}
+    .result-circle.fail .result-num{color:#e74c3c}
+    .result-lbl{font-size:.75rem;color:var(--text-muted)}
+    .question-form .form-label{font-size:.78rem}
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <a href="index.html" class="navbar-brand">
+      <div class="navbar-logo"><img src="assets/logo.png" alt="المتفوقين" style="width:38px;height:38px;object-fit:contain;border-radius:8px;"></div>
+      <span class="navbar-title">المتفوقين</span>
+    </a>
+    <button class="navbar-toggler"><span></span><span></span><span></span></button>
+    <ul class="navbar-nav">
+      <li><a href="index.html" class="nav-link">🏠 الموقع</a></li>
+      <li><button id="logoutBtn" class="nav-link btn-admin" style="background:rgba(231,76,60,.8);border:none;cursor:pointer">🚪 خروج</button></li>
+    </ul>
+  </nav>
+
+  <div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+      <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border);margin-bottom:1rem">
+        <div style="display:flex;align-items:center;gap:.75rem">
+          <div style="width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--accent),var(--gold));display:flex;align-items:center;justify-content:center;font-size:1.2rem;font-weight:900;color:white">A</div>
+          <div><div style="font-weight:700;font-size:.95rem">المدير</div><div style="font-size:.75rem;color:var(--text-muted)">admin</div></div>
+        </div>
+      </div>
+      <div class="sidebar-section-label">القائمة</div>
+      <ul class="sidebar-menu">
+        <li class="sidebar-menu-item"><a class="sidebar-menu-link active" data-section="sectionOverview"><span class="menu-icon">📊</span> نظرة عامة</a></li>
+        <li class="sidebar-menu-item"><a class="sidebar-menu-link" data-section="sectionCourses"><span class="menu-icon">📚</span> الكورسات</a></li>
+        <li class="sidebar-menu-item"><a class="sidebar-menu-link" data-section="sectionViews"><span class="menu-icon">👁️</span> المشاهدات</a></li>
+        <li class="sidebar-menu-item"><a class="sidebar-menu-link" data-section="sectionQuizzes"><span class="menu-icon">📝</span> الامتحانات</a></li>
+        <li class="sidebar-menu-item"><a class="sidebar-menu-link" data-section="sectionStudents"><span class="menu-icon">🎓</span> الطلاب</a></li>
+        <li class="sidebar-menu-item"><a class="sidebar-menu-link" data-section="sectionStudents"><span class="menu-icon">🎓</span> الطلاب</a></li>
+      </ul>
+      <div class="sidebar-section-label">أخرى</div>
+      <ul class="sidebar-menu">
+        <li class="sidebar-menu-item"><a class="sidebar-menu-link" href="index.html"><span class="menu-icon">🌐</span> عرض الموقع</a></li>
+        <li class="sidebar-menu-item">
+          <button class="sidebar-menu-link" onclick="DB.adminLogout();window.location.href='index.html'" style="width:100%;border:none;cursor:pointer;background:none;color:var(--error)">
+            <span class="menu-icon">🚪</span> خروج
+          </button>
+        </li>
+      </ul>
+    </aside>
+
+    <main class="dashboard-main">
+
+      <!-- نظرة عامة -->
+      <div class="page-section active" id="sectionOverview">
+        <div class="dashboard-header">
+          <h1 class="dashboard-title">نظرة عامة 📊</h1>
+          <p class="dashboard-subtitle">مرحباً بك في لوحة تحكم المتفوقين</p>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card"><div class="stat-icon red">📚</div><div class="stat-info"><div class="num" id="dashCoursesCount">0</div><div class="label">كورسات</div></div></div>
+          <div class="stat-card"><div class="stat-icon gold">📖</div><div class="stat-info"><div class="num" id="dashLessonsCount">0</div><div class="label">دروس</div></div></div>
+          <div class="stat-card"><div class="stat-icon blue">👁️</div><div class="stat-info"><div class="num" id="dashViewsCount">0</div><div class="label">مشاهدة</div></div></div>
+          <div class="stat-card"><div class="stat-icon green">📝</div><div class="stat-info"><div class="num" id="dashQuizzesCount">0</div><div class="label">امتحانات</div></div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:rgba(155,89,182,.2)">🎓</div><div class="stat-info"><div class="num" id="dashStudentsCount">0</div><div class="label">طالب مسجل</div></div></div>
+          <div class="stat-card"><div class="stat-icon" style="background:rgba(155,89,182,.2)">🎓</div><div class="stat-info"><div class="num" id="dashStudentsCount">0</div><div class="label">طلاب</div></div></div>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">📋 الكورسات</span>
+            <button class="btn-success" onclick="switchSection('sectionCourses')">+ إضافة كورس</button>
+          </div>
+          <div style="overflow-x:auto">
+            <table><thead><tr><th>الكورس</th><th>التصنيف</th><th>الدروس</th><th>المشاهدات</th><th>إجراءات</th></tr></thead>
+            <tbody id="coursesTableBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- الكورسات -->
+      <div class="page-section" id="sectionCourses">
+        <div class="dashboard-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+            <div><h1 class="dashboard-title">إدارة الكورسات 📚</h1></div>
+            <button id="addCourseBtn" class="btn-success" style="padding:12px 24px;font-size:1rem">+ إضافة كورس</button>
+          </div>
+        </div>
+        <div class="table-card">
+          <div style="overflow-x:auto">
+            <table><thead><tr><th>الكورس</th><th>التصنيف</th><th>الدروس</th><th>المشاهدات</th><th>إجراءات</th></tr></thead>
+            <tbody id="coursesTableBody2"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- المشاهدات -->
+      <div class="page-section" id="sectionViews">
+        <div class="dashboard-header">
+          <h1 class="dashboard-title">إحصائيات المشاهدات 👁️</h1>
+          <p class="dashboard-subtitle">عدد مرات مشاهدة كل درس من الطلاب</p>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">ترتيب الدروس حسب المشاهدات</span>
+            <span style="font-size:.85rem;color:var(--text-muted)">إجمالي: <strong id="totalViewsLabel" style="color:var(--accent)">0</strong> مشاهدة</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table><thead><tr><th>#</th><th>الكورس</th><th>الدرس</th><th>المشاهدات</th></tr></thead>
+            <tbody id="viewsTableBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- الامتحانات -->
+      <div class="page-section" id="sectionQuizzes">
+        <div class="dashboard-header">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem">
+            <div><h1 class="dashboard-title">إدارة الامتحانات 📝</h1><p class="dashboard-subtitle">أنشئ امتحانات للكورسات والدروس</p></div>
+            <button id="addQuizBtn" class="btn-success" style="padding:12px 24px;font-size:1rem">+ إضافة امتحان</button>
+          </div>
+        </div>
+        <div class="table-card">
+          <div style="overflow-x:auto">
+            <table><thead><tr><th>العنوان</th><th>الكورس</th><th>الدرس</th><th>الأسئلة</th><th>إجراءات</th></tr></thead>
+            <tbody id="quizzesTableBody"></tbody></table>
+          </div>
+        </div>
+      </div>
+
+      <!-- الطلاب -->
+      <div class="page-section" id="sectionStudents">
+        <div class="dashboard-header">
+          <h1 class="dashboard-title">الطلاب المسجلين 🎓</h1>
+          <p class="dashboard-subtitle">كل الطلاب اللي سجلوا في المنصة</p>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">قائمة الطلاب</span>
+            <span style="font-size:.85rem;color:var(--text-muted)">إجمالي: <strong id="totalStudentsLabel" style="color:var(--accent)">0</strong> طالب</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>#</th><th>الاسم</th><th>رقم الهاتف</th><th>تاريخ التسجيل</th><th>إجراءات</th></tr></thead>
+              <tbody id="studentsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+
+      <!-- الطلاب -->
+      <div class="page-section" id="sectionStudents">
+        <div class="dashboard-header">
+          <h1 class="dashboard-title">الطلاب المسجلين 🎓</h1>
+          <p class="dashboard-subtitle">جميع الطلاب المسجلين في المنصة</p>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header">
+            <span class="table-card-title">قائمة الطلاب</span>
+            <span style="font-size:.85rem;color:var(--text-muted)">إجمالي: <strong id="totalStudentsLabel" style="color:var(--accent)">0</strong> طالب</span>
+          </div>
+          <div style="overflow-x:auto">
+            <table>
+              <thead><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>تاريخ التسجيل</th><th>الدروس المكتملة</th><th>الكورسات</th></tr></thead>
+              <tbody id="studentsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- مودال الكورس -->
+  <div class="modal-overlay" id="courseModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header"><h3 class="modal-title" id="courseModalTitle">إضافة كورس</h3><button class="modal-close" onclick="closeCourseModal()">✕</button></div>
+      <form id="courseForm" onsubmit="saveCourse(event)">
+        <input type="hidden" id="courseId">
+        <div class="form-group"><label class="form-label">عنوان الكورس *</label><input type="text" id="courseTitleInput" class="form-control" required></div>
+        <div class="form-group"><label class="form-label">الوصف *</label><textarea id="courseDescInput" class="form-control" required></textarea></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+          <div class="form-group"><label class="form-label">التصنيف *</label><input type="text" id="courseCategoryInput" class="form-control" required list="catSug"><datalist id="catSug"><option value="برمجة"><option value="تصميم"><option value="تسويق"><option value="لغات"><option value="أعمال"></datalist></div>
+          <div class="form-group"><label class="form-label">إيموجي</label><input type="text" id="courseEmojiInput" class="form-control" placeholder="📚" maxlength="4"></div>
+        </div>
+        <div class="form-group"><label class="form-label">صورة الكورس</label><label class="file-input-label" for="courseThumbnailInput"><span class="upload-icon">🖼️</span><span>اختر صورة</span></label><input type="file" id="courseThumbnailInput" accept="image/*"></div>
+        <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeCourseModal()">إلغاء</button><button type="submit" class="btn-primary" style="width:auto;padding:10px 24px">💾 حفظ</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- مودال الدروس -->
+  <div class="modal-overlay" id="lessonsModal" style="display:none">
+    <div class="modal" style="max-width:640px">
+      <div class="modal-header"><div><h3 class="modal-title">📖 دروس الكورس</h3><p style="font-size:.85rem;color:var(--text-muted);margin-top:4px" id="manageLessonsCourseTitle"></p></div><button class="modal-close" onclick="closeLessonsModal()">✕</button></div>
+      <div id="manageLessonsList" class="lessons-manage-list" style="margin-bottom:1rem;max-height:350px;overflow-y:auto"></div>
+      <button class="btn-success" style="width:100%" onclick="showAddLessonForm()">+ إضافة درس</button>
+    </div>
+  </div>
+
+  <!-- مودال الدرس -->
+  <div class="modal-overlay" id="lessonEditModal" style="display:none">
+    <div class="modal">
+      <div class="modal-header"><h3 class="modal-title" id="lessonModalTitle">إضافة درس</h3><button class="modal-close" onclick="closeLessonModal()">✕</button></div>
+      <form id="lessonForm" onsubmit="saveLesson(event)">
+        <input type="hidden" id="lessonEditId"><input type="hidden" id="lessonEditCourseId">
+        <div class="form-group"><label class="form-label">عنوان الدرس *</label><input type="text" id="lessonTitleInput" class="form-control" required></div>
+        <div class="form-group"><label class="form-label">رابط يوتيوب</label><input type="text" id="lessonVideoInput" class="form-control" placeholder="https://youtube.com/watch?v=..."></div>
+        <div class="form-group"><label class="form-label">ملف PDF</label><label class="file-input-label" for="lessonPdfInput"><span class="upload-icon">📄</span><span>اختر ملف PDF (max 5MB)</span></label><input type="file" id="lessonPdfInput" accept=".pdf"></div>
+        <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeLessonModal()">إلغاء</button><button type="submit" class="btn-primary" style="width:auto;padding:10px 24px">💾 حفظ</button></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- مودال الامتحان -->
+  <div class="modal-overlay" id="quizModal" style="display:none">
+    <div class="modal" style="max-width:620px">
+      <div class="modal-header"><h3 class="modal-title" id="quizModalTitle">إضافة امتحان</h3><button class="modal-close" onclick="closeQuizModal()">✕</button></div>
+      <div class="form-group"><label class="form-label">عنوان الامتحان *</label><input type="text" id="quizTitleInput" class="form-control" placeholder="مثال: امتحان الوحدة الأولى"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:.85rem">
+        <div class="form-group"><label class="form-label">الكورس *</label><select id="quizCourseSelect" class="form-control" onchange="updateLessonSelect(this.value)"><option value="">اختر الكورس</option></select></div>
+        <div class="form-group"><label class="form-label">الدرس (اختياري)</label><select id="quizLessonSelect" class="form-control"><option value="">على مستوى الكورس كله</option></select></div>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem">
+        <strong style="font-size:.95rem">الأسئلة</strong>
+        <button type="button" class="btn-success" style="padding:7px 16px;font-size:.85rem" onclick="addQuestion()">+ إضافة سؤال</button>
+      </div>
+      <div id="quizQuestionsContainer" style="max-height:360px;overflow-y:auto;padding-left:2px"></div>
+      <div class="modal-footer"><button type="button" class="btn-secondary" onclick="closeQuizModal()">إلغاء</button><button type="button" class="btn-primary" style="width:auto;padding:10px 24px" onclick="saveQuiz()">💾 حفظ الامتحان</button></div>
+    </div>
+  </div>
+
+  <div id="notifications" class="notifications-container"></div>
+  <script src="js/app.js"></script>
+  <script>
+    function switchSection(id) {
+      document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+      document.querySelectorAll('.sidebar-menu-link[data-section]').forEach(l => l.classList.remove('active'));
+      const link = document.querySelector('[data-section="'+id+'"]');
+      if (link) link.classList.add('active');
+      if (id === 'sectionViews') {
+        renderViewsTable();
+        const lbl = document.getElementById('totalViewsLabel');
+        if (lbl) lbl.textContent = DB.getTotalViews();
+      }
+      if (id === 'sectionQuizzes') renderQuizzesTable();
+      if (id === 'sectionStudents') renderStudentsTable();
+    }
+
+    function renderStudentsTable() {
+      const students = DB.getStudents();
+      const tbody = document.getElementById('studentsTableBody');
+      const lbl = document.getElementById('totalStudentsLabel');
+      if (lbl) lbl.textContent = students.length;
+      if (!tbody) return;
+      if (!students.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem">لا يوجد طلاب مسجلون بعد</td></tr>';
+        return;
+      }
+      tbody.innerHTML = students.map((s, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td><strong>${s.name}</strong></td>
+          <td style="font-family:monospace;direction:ltr;text-align:right">${s.phone}</td>
+          <td>${new Date(s.joinedAt).toLocaleDateString('ar-EG')}</td>
+          <td>
+            <button class="btn-danger" onclick="deleteStudent('${s.id}')">🗑️ حذف</button>
+          </td>
+        </tr>`).join('');
+    }
+
+    function deleteStudent(id) {
+      if (!confirm('حذف هذا الطالب؟')) return;
+      DB.saveStudents(DB.getStudents().filter(s => s.id !== id));
+      renderStudentsTable();
+      updateDashboardStats();
+    }
+
+    // تحديث إحصائيات الداشبورد لتشمل الطلاب
+    document.addEventListener('DOMContentLoaded', () => {
+      const origStats = window.updateDashboardStats;
+      window.updateDashboardStats = function() {
+        if (origStats) origStats();
+        const sc = document.getElementById('dashStudentsCount');
+        if (sc) sc.textContent = DB.getStudents().length;
+      };
+    });
+
+    const _origRender = window.renderCoursesTable;
+    window.renderCoursesTable = function() {
+      const courses = DB.getCourses();
+      const makeRows = (tbodyId) => {
+        const tbody = document.getElementById(tbodyId);
+        if (!tbody) return;
+        if (!courses.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted);padding:2rem">لا توجد كورسات</td></tr>'; return; }
+        tbody.innerHTML = courses.map(c => {
+          const cv = DB.getCourseViews(c.id);
+          return '<tr><td><span style="font-size:1.1rem;margin-left:.4rem">'+(c.emoji||'📚')+'</span><strong>'+c.title+'</strong></td>'
+            +'<td><span class="badge badge-accent">'+c.category+'</span></td>'
+            +'<td>'+(c.lessons?c.lessons.length:0)+' درس</td>'
+            +'<td><span style="color:var(--accent);font-weight:700">👁️ '+cv+'</span></td>'
+            +'<td><div class="table-actions">'
+            +'<button class="btn-success" style="font-size:.8rem" onclick="openManageLessons(\''+c.id+'\')">📖 دروس</button>'
+            +'<button class="btn-secondary" style="font-size:.8rem" onclick="showEditCourseModal(\''+c.id+'\')">✏️</button>'
+            +'<button class="btn-danger" onclick="deleteCourse(\''+c.id+'\')">🗑️</button>'
+            +'</div></td></tr>';
+        }).join('');
+      };
+      makeRows('coursesTableBody');
+      makeRows('coursesTableBody2');
+    };
+
+    // ===== عرض الطلاب =====
+    function renderStudentsTable() {
+      const students = DB.getStudents();
+      const progress = DB.getProgress();
+      const courses  = DB.getCourses();
+
+      const lbl = document.getElementById('totalStudentsLabel');
+      if (lbl) lbl.textContent = students.length;
+
+      const sc = document.getElementById('dashStudentsCount');
+      if (sc) sc.textContent = students.length;
+
+      const tbody = document.getElementById('studentsTableBody');
+      if (!tbody) return;
+
+      if (!students.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted);padding:2rem">لا يوجد طلاب مسجلين بعد</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = students.map((st, i) => {
+        // حساب الدروس المكتملة لكل طالب
+        let completed = 0, totalLessons = 0, activeCourses = 0;
+        courses.forEach(c => {
+          let courseHasProgress = false;
+          (c.lessons||[]).forEach(l => {
+            totalLessons++;
+            if (progress[c.id+'_'+l.id]) { completed++; courseHasProgress = true; }
+          });
+          if (courseHasProgress) activeCourses++;
+        });
+
+        const joinDate = new Date(st.joinedAt).toLocaleDateString('ar-EG');
+        return `<tr>
+          <td style="color:var(--text-muted)">${i+1}</td>
+          <td><div style="display:flex;align-items:center;gap:.6rem">
+            <div style="width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--gold));display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:white;flex-shrink:0">${st.name.substring(0,2)}</div>
+            <strong>${st.name}</strong>
+          </div></td>
+          <td style="direction:ltr;text-align:right">${st.phone}</td>
+          <td>${joinDate}</td>
+          <td><span style="color:var(--accent);font-weight:700">${completed}</span> <span style="color:var(--text-muted);font-size:.8rem">درس</span></td>
+          <td><span class="badge badge-accent">${activeCourses} كورس</span></td>
+        </tr>`;
+      }).join('');
+    }
+
+    // تشغيلها عند فتح قسم الطلاب
+    const _origSwitch = window.switchSection;
+    window.switchSection = function(id) {
+      if (_origSwitch) _origSwitch(id);
+      else {
+        document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+        const el = document.getElementById(id);
+        if (el) el.classList.add('active');
+        document.querySelectorAll('.sidebar-menu-link[data-section]').forEach(l => l.classList.remove('active'));
+        const link = document.querySelector('[data-section="'+id+'"]');
+        if (link) link.classList.add('active');
+      }
+      if (id === 'sectionStudents') renderStudentsTable();
+    };
+
+  </script>
+</body>
+</html>
